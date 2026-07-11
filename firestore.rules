@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// This app has no Firebase Authentication — "admin" is just a client-side
+// password check in the page itself. That means these rules can restrict
+// *what* gets written (so a stranger can't upload garbage data types or huge
+// blobs into random collections) but cannot restrict *who* writes, since the
+// browser never proves who it is to Firebase. Anyone who opens devtools and
+// finds your Firebase config can still write directly to Firestore, bypassing
+// the site's admin password. That is true of the app's current design
+// regardless of backend. If you need real access control, add Firebase
+// Authentication (e.g. email/password for the admin account) and change the
+// `allow write` lines below to check `request.auth != null`.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Shared data: cars, enquiries, bookings, blog posts, gallery, etc.
+    // Readable by anyone (it's a public car listing site).
+    match /passionCarShared/{docId} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly(['value', 'overflow', 'size', 'updatedAt'])
+                   && (
+                        ('value' in request.resource.data && request.resource.data.value is string)
+                        || ('overflow' in request.resource.data && request.resource.data.overflow == true)
+                      );
+      allow delete: if true;
+    }
+
+    // Personal data: currently just the signed-in customer's own email pointer
+    // and their profile record, keyed by their own email address.
+    match /passionCarPersonal/{docId} {
+      allow read, write, delete: if request.resource == null
+        || (request.resource.data.keys().hasOnly(['value', 'overflow', 'size', 'updatedAt'])
+            && (
+                 ('value' in request.resource.data && request.resource.data.value is string)
+                 || ('overflow' in request.resource.data && request.resource.data.overflow == true)
+               ));
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Passion Car",
+  "short_name": "Passion Car",
+  "description": "Hyderabad's trusted premium pre-owned car dealership.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "icons": []
+}

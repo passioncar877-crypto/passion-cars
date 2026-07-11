@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// Same trust model as firestore.rules: no Firebase Auth exists in this app,
+// so these rules limit file size/location but not "who". See the comment
+// at the top of firestore.rules for how to add real access control later.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /shared/{fileName} {
+      allow read: if true;
+      allow write: if request.resource.size < 15 * 1024 * 1024; // 15MB cap per file
+    }
+    match /personal/{fileName} {
+      allow read, write: if request.resource.size < 15 * 1024 * 1024;
+    }
+  }
+}
